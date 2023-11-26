@@ -1,0 +1,19 @@
+{
+  "flowroute": {
+    "secretKey": "your_secret_key_placeholder",
+    "accessKey": "your_access_key_placeholder",
+    "webhookCallbackUrl": "your_webhook_callback_url_placeholder",
+    "mmsMediaUrl": "your_mms_media_url_placeholder"
+  },
+  "discord": {
+    "token": "your_discord_token_placeholder",
+    "guildId": "your_discord_guild_id_placeholder",
+    "channelId": "your_discord_channel_id_placeholder",
+    "phoneNumberToUserId": {
+      "your_phone_number_placeholder": "your_user_id_placeholder"
+    },
+    "usernames": {
+      "your_user_id_placeholder": "your_username_placeholder"
+    }
+  }
+}
