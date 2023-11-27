@@ -1,26 +1,26 @@
 {
   "discord": {
-    "token": "your-discord-bot-token",
-    "guildId": "your-discord-guild-id",
-    "channelId": "your-discord-channel-id",
+    "token": "YOUR_DISCORD_BOT_TOKEN",
+    "guildId": "YOUR_DISCORD_GUILD_ID",
+    "channelId": "YOUR_DISCORD_CHANNEL_ID",
     "phoneNumberToUserId": {
-      "phoneNumber1": "userId1",
-      "phoneNumber2": "userId2",
-      "phoneNumber3": "userId3",
-      "phoneNumber4": "userId4"
+      "YOUR_PHONE_NUMBER_1": "DISCORD_USER_ID_1",
+      "YOUR_PHONE_NUMBER_2": "DISCORD_USER_ID_2",
+      "YOUR_PHONE_NUMBER_3": "DISCORD_USER_ID_3",
+      "YOUR_PHONE_NUMBER_4": "DISCORD_USER_ID_4"
     },
     "usernames": {
-      "userId1": "User1",
-      "userId2": "User2",
-      "userId3": "User3",
-      "userId4": "User4"
+      "DISCORD_USER_ID_1": "USERNAME_1",
+      "DISCORD_USER_ID_2": "USERNAME_2",
+      "DISCORD_USER_ID_3": "USERNAME_3",
+      "DISCORD_USER_ID_4": "USERNAME_4"
     },
-    "webhookUrl": "https://discord.com/api/webhooks/your-webhook-id/your-webhook-token"
+    "webhookUrl": "YOUR_DISCORD_WEBHOOK_URL"
   },
   "flowroute": {
-    "secretKey": "your-flowroute-secret-key",
-    "accessKey": "your-flowroute-access-key",
-    "webhookCallbackUrl": "https://yourdomain.com/sms-callback-url",
-    "mmsMediaUrl": "https://yourdomain.com/mms-media-url"
+    "secretKey": "YOUR_FLOWROUTE_SECRET_KEY",
+    "accessKey": "YOUR_FLOWROUTE_ACCESS_KEY",
+    "webhookCallbackUrl": "YOUR_FLOWROUTE_WEBHOOK_CALLBACK_URL",
+    "mmsMediaUrl": "YOUR_FLOWROUTE_MMS_MEDIA_URL"
   }
 }

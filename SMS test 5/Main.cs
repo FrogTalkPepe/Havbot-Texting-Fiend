@@ -18,7 +18,7 @@ namespace Mainboi
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Lets set this off!");
+            Console.WriteLine("Bot starting up...");
 
             LoadKeys();
 
@@ -44,7 +44,7 @@ namespace Mainboi
             while (true)
             {
                 await HandleIncomingCommandsAndMessages();
-                await Task.Delay(100); // Delay to prevent tight loop
+                await Task.Delay(1000); // Delay to prevent tight loop, adjust as necessary
             }
         }
 
@@ -70,9 +70,7 @@ namespace Mainboi
 
         private static async Task HandleIncomingCommandsAndMessages()
         {
-            // Handle SMS/MMS messages
             await HandleSmsMmsMessages();
-
             // Here you can add additional logic for handling Discord commands or terminal inputs
         }
 
@@ -84,19 +82,22 @@ namespace Mainboi
             foreach (var message in messages)
             {
                 var messageId = message["id"]?.ToString();
+
                 if (messageId == null || _smsHandler.IsMessageDisplayed(messageId))
-                    continue;
+                {
+                    continue; // Skip processing if the message is already displayed or null.
+                }
+
+                // Log only when a new message is being processed.
+                Console.WriteLine("Checking for SMS/MMS messages...");
+                Console.WriteLine($"Processing new message: {messageId}");
 
                 _smsHandler.MarkMessageAsDisplayed(messageId);
                 latestMessage = message;
-            }
-
-            if (latestMessage != null)
-            {
                 var formattedMessage = _smsHandler.FormatSmsMessage(latestMessage);
                 _messageHistory.Add(formattedMessage);
 
-                // Send the latest message to Discord
+                Console.WriteLine($"Received SMS/MMS: {formattedMessage}");
                 await _discordHandler.SendMessageAsync(formattedMessage, latestMessage["attributes"]["to"].ToString());
             }
         }
@@ -111,4 +112,6 @@ namespace Mainboi
             }
         }
     }
-}
+}// Other methods in your class...
+    
+

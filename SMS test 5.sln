@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMS test 5", "SMS test 5\SMS test 5.csproj", "{D0F8E8F4-229A-4AF0-92AB-A8E87FFC791E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sms Flow 7", "SMS test 5\Sms Flow 7.csproj", "{D0F8E8F4-229A-4AF0-92AB-A8E87FFC791E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

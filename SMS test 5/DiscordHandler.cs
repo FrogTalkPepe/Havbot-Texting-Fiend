@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Smguy;
 using System.Text;
+using System.Linq;
 
 namespace Dboy
 {
@@ -70,11 +71,22 @@ namespace Dboy
                     if (!string.IsNullOrEmpty(senderPhoneNumber))
                     {
                         await _smsHandler.SendSMSMMSAsync(senderPhoneNumber, phoneNumber, messageContent);
+                        Console.WriteLine($"Sent SMS/MMS to {phoneNumber}: {messageContent}");
                     }
                 }
                 else if (messageContent.StartsWith("!!"))
                 {
                     await HandleCommandAsync(messageContent, senderUserId);
+                }
+
+                if (socketMessage.MentionedUsers.Any(user => user.Id == _discordClient.CurrentUser.Id))
+                {
+                    Console.WriteLine($"Bot mentioned by {socketMessage.Author.Username}: {socketMessage.Content}");
+                }
+
+                if (IsReplyToBot(socketMessage))
+                {
+                    Console.WriteLine($"Bot replied by {socketMessage.Author.Username}: {socketMessage.Content}");
                 }
             }
             catch (Exception ex)
@@ -86,13 +98,19 @@ namespace Dboy
         private bool IsReplyToSms(SocketMessage message)
         {
             // Placeholder implementation. Update this with your own logic.
-            return false;
+            return false; // Modify this line with your logic
         }
 
         private string ExtractPhoneNumberFromReply(SocketMessage message)
         {
             // Placeholder implementation. Update this with your own logic.
             return string.Empty;
+        }
+
+        private bool IsReplyToBot(SocketMessage message)
+        {
+            // Placeholder implementation. Update this with your logic to identify if the message is a reply to the bot.
+            return false; // Modify this line with your logic
         }
 
         private async Task HandleCommandAsync(string command, ulong senderUserId)
@@ -111,7 +129,8 @@ namespace Dboy
                         await ProcessMsgCommand(parts, senderUserId);
                         break;
                     case "!!help":
-                        await DisplayHelpMessage(senderUserId);
+                        string helpCommand = parts.Length > 1 ? parts[1] : null;
+                        await DisplayHelpMessage(senderUserId, helpCommand);
                         break;
                         // Add other commands here
                 }
@@ -139,14 +158,27 @@ namespace Dboy
             }
         }
 
-        private async Task DisplayHelpMessage(ulong userId)
+        private async Task DisplayHelpMessage(ulong userId, string command = null)
         {
             var user = _discordClient.GetUser(userId);
             if (user == null) return;
 
-            string helpMessage = "Available Commands:\n" +
-                                 "- `!!help`: Shows this help message.\n" +
-                                 "- `!!msg <PhoneNumber> <Message>`: Send an SMS to the specified phone number.";
+            string helpMessage;
+
+            switch (command?.ToLower())
+            {
+                case "msg":
+                    helpMessage = "Use `!!msg <PhoneNumber> <Message>` to send an SMS.\n" +
+                                  "- `<PhoneNumber>` should be in the format 1NXXNXXXXXX.\n" +
+                                  "- `<Message>` is the text you want to send.";
+                    break;
+                default:
+                    helpMessage = "Available Commands:\n" +
+                                  "- `!!help`: Shows this help message.\n" +
+                                  "- `!!help <command>`: Shows help about a specific command.\n" +
+                                  "- `!!msg <PhoneNumber> <Message>`: Send an SMS to the specified phone number.";
+                    break;
+            }
 
             await user.SendMessageAsync(helpMessage);
         }
@@ -188,6 +220,7 @@ namespace Dboy
                             .Build();
 
                         await channel.SendMessageAsync(user.Mention, false, embed);
+                        Console.WriteLine($"Sent message to {toPhoneNumber}: {message}");
                     }
                     else
                     {
