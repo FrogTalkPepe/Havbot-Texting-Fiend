@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Mainboi; // Adjusted for your namespace
-using Mainboi; // Adjusted for your namespace
 using Newtonsoft.Json.Linq;
-using Dboy;
-using Smguy;
+using Dboy; // Adjusted for your namespace
+using Smguy; // Adjusted for your namespace
 
 namespace Mainboi
 {
@@ -16,36 +14,36 @@ namespace Mainboi
         private static dynamic _keys;
         private static SmsHandler _smsHandler;
         private static DiscordHandler _discordHandler;
-        private static Dictionary<string, ulong> _phoneNumberToUserIdMapping;
         private static List<string> _messageHistory = new List<string>();
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Starting Application...");
+            Console.WriteLine("Lets set this off!");
 
             LoadKeys();
 
-            // Load the phoneNumberToUserId mapping
-            _phoneNumberToUserIdMapping = _keys.discord.phoneNumberToUserId.ToObject<Dictionary<string, ulong>>();
-
-            // Initialize DiscordHandler with the mapping
-            _discordHandler = new DiscordHandler(
-                _keys.discord.token.ToString(),
-                ulong.Parse(_keys.discord.guildId.ToString()),
-                ulong.Parse(_keys.discord.channelId.ToString()),
-                _phoneNumberToUserIdMapping
-            );
-
-            await _discordHandler.LoginAsync();
+            ulong guildId = ulong.Parse(_keys.discord.guildId.ToString());
+            ulong channelId = ulong.Parse(_keys.discord.channelId.ToString());
 
             _smsHandler = new SmsHandler(
                 _keys.flowroute.accessKey.ToString(),
                 _keys.flowroute.secretKey.ToString(),
                 _keys.flowroute.mmsMediaUrl.ToString());
 
-            while (true) // Continuous loop
+            _discordHandler = new DiscordHandler(
+                _keys.discord.token.ToString(),
+                guildId,
+                channelId,
+                ((JObject)_keys.discord.phoneNumberToUserId).ToObject<Dictionary<string, ulong>>(),
+                _keys.discord.webhookUrl.ToString(),
+                _smsHandler);
+
+            await _discordHandler.LoginAsync();
+
+            // Main loop for handling commands and messages
+            while (true)
             {
-                await HandleSmsMmsMessages();
+                await HandleIncomingCommandsAndMessages();
                 await Task.Delay(100); // Delay to prevent tight loop
             }
         }
@@ -70,6 +68,14 @@ namespace Mainboi
             }
         }
 
+        private static async Task HandleIncomingCommandsAndMessages()
+        {
+            // Handle SMS/MMS messages
+            await HandleSmsMmsMessages();
+
+            // Here you can add additional logic for handling Discord commands or terminal inputs
+        }
+
         private static async Task HandleSmsMmsMessages()
         {
             var messages = await _smsHandler.GetFlowrouteMessages(1);
@@ -90,7 +96,7 @@ namespace Mainboi
                 var formattedMessage = _smsHandler.FormatSmsMessage(latestMessage);
                 _messageHistory.Add(formattedMessage);
 
-                // Send only the latest message to Discord
+                // Send the latest message to Discord
                 await _discordHandler.SendMessageAsync(formattedMessage, latestMessage["attributes"]["to"].ToString());
             }
         }
@@ -99,7 +105,6 @@ namespace Mainboi
         {
             Console.Clear();
 
-            // Display messages with the newest at the bottom
             foreach (var message in _messageHistory)
             {
                 Console.WriteLine(message);

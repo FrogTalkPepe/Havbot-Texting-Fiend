@@ -1,19 +1,26 @@
 {
-  "flowroute": {
-    "secretKey": "your_secret_key_placeholder",
-    "accessKey": "your_access_key_placeholder",
-    "webhookCallbackUrl": "your_webhook_callback_url_placeholder",
-    "mmsMediaUrl": "your_mms_media_url_placeholder"
-  },
   "discord": {
-    "token": "your_discord_token_placeholder",
-    "guildId": "your_discord_guild_id_placeholder",
-    "channelId": "your_discord_channel_id_placeholder",
+    "token": "your-discord-bot-token",
+    "guildId": "your-discord-guild-id",
+    "channelId": "your-discord-channel-id",
     "phoneNumberToUserId": {
-      "your_phone_number_placeholder": "your_user_id_placeholder"
+      "phoneNumber1": "userId1",
+      "phoneNumber2": "userId2",
+      "phoneNumber3": "userId3",
+      "phoneNumber4": "userId4"
     },
     "usernames": {
-      "your_user_id_placeholder": "your_username_placeholder"
-    }
+      "userId1": "User1",
+      "userId2": "User2",
+      "userId3": "User3",
+      "userId4": "User4"
+    },
+    "webhookUrl": "https://discord.com/api/webhooks/your-webhook-id/your-webhook-token"
+  },
+  "flowroute": {
+    "secretKey": "your-flowroute-secret-key",
+    "accessKey": "your-flowroute-access-key",
+    "webhookCallbackUrl": "https://yourdomain.com/sms-callback-url",
+    "mmsMediaUrl": "https://yourdomain.com/mms-media-url"
   }
 }

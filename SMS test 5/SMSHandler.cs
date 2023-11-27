@@ -29,7 +29,7 @@ namespace Smguy
         public async Task<JArray> GetFlowrouteMessages(int limit = 50)
         {
             string startDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ssZ");
-            var url = $"https://api.flowroute.com/v2.2/messages?start_date={startDate}&limit={limit}";
+            var url = $"https://api.flowroute.com/v2.1/messages?start_date={startDate}&limit={limit}";
 
             try
             {
@@ -99,6 +99,46 @@ namespace Smguy
             }
 
             return timestamp;
+        }
+
+        public async Task<string> SendSMSMMSAsync(string fromDid, string toPhoneNumber, string messageContent)
+        {
+            var smsMessage = new
+            {
+                from = fromDid,
+                to = toPhoneNumber,
+                body = messageContent
+            };
+
+            return await SendSMSViaFlowroute(smsMessage);
+        }
+
+        private async Task<string> SendSMSViaFlowroute(object smsMessage)
+        {
+            try
+            {
+                string apiUrl = "https://api.flowroute.com/v2.1/messages";
+                string jsonContent = Newtonsoft.Json.JsonConvert.SerializeObject(smsMessage);
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(apiUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return responseContent;
+                }
+                else
+                {
+                    Console.WriteLine($"Error sending SMS via Flowroute: {response.StatusCode}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending SMS via Flowroute: {ex.Message}");
+                return null;
+            }
         }
     }
 }
