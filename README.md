@@ -20,14 +20,14 @@ Installation
 
     bash
 
-git clone https://your-repository-url
-cd your-repository-directory
+git clone https://github.com/havokzero/Flowroute-SMS-DiscordBot
+cd Flowroute-SMS-DiscordBot
 
 Set up keys.json
 
 Replace the placeholders in keys.json with your actual Discord and Flowroute credentials.
 
-json
+```json
 
 {
   "discord": {
@@ -42,6 +42,7 @@ json
     ...
   }
 }
+```
 
 Build and Run
 
@@ -85,3 +86,5 @@ Notes
 Support
 
 For any queries or support, please open an issue in the repository or contact the repository maintainer.
+
+The Flowroute SMS/MMS will not function without setting up the proper API access.
