@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Discord.Commands;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,6 +15,7 @@ namespace Dboy
     public class DiscordHandler
     {
         private readonly DiscordSocketClient _discordClient;
+        private readonly CommandService _commands;
         private readonly string _token;
         private readonly ulong _guildId;
         private readonly ulong _channelId;
@@ -29,10 +32,31 @@ namespace Dboy
             _phoneNumberToUserId = phoneNumberToUserId;
             _webhookUrl = webhookUrl;
             _smsHandler = smsHandler;
+            _commands = new CommandService();
 
-            _discordClient = new DiscordSocketClient();
+            var config = new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.GuildMembers
+            };
+
+            _discordClient = new DiscordSocketClient(config);
+            _discordClient.Log += LogAsync;
             _discordClient.Ready += OnClientReady;
             _discordClient.MessageReceived += OnMessageReceivedAsync;
+
+            _commands.AddModuleAsync(typeof(CommandModule), services: null);
+        }
+
+        private Task LogAsync(LogMessage log)
+        {
+            Console.WriteLine(log.ToString());
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+            await LoginAsync();
         }
 
         public async Task LoginAsync()
@@ -48,13 +72,38 @@ namespace Dboy
             }
         }
 
-        public async Task LogoutAsync()
+        private async Task OnMessageReceivedAsync(SocketMessage socketMessage)
         {
-            await _discordClient.LogoutAsync();
-            await _discordClient.StopAsync();
+            if (!(socketMessage is SocketUserMessage message)) return;
+
+            // Command handling
+            int argPos = 0;
+            if (message.HasCharPrefix('!', ref argPos))
+            {
+                Console.WriteLine("Command received: " + message.Content);
+                var context = new SocketCommandContext(_discordClient, message);
+                await HandleCommandAsync(context, argPos);
+            }
+            else
+            {
+                await HandleNonCommandMessageAsync(socketMessage);
+            }
+        }
+        private async Task HandleCommandAsync(SocketCommandContext context, int argPos)
+        {
+            Console.WriteLine($"Handling command: {context.Message.Content}");
+            var result = await _commands.ExecuteAsync(context, argPos, services: null);
+            if (!result.IsSuccess)
+            {
+                Console.WriteLine($"Command failed: {result.ErrorReason}");
+            }
+            else
+            {
+                Console.WriteLine("Command processed successfully.");
+            }
         }
 
-        private async Task OnMessageReceivedAsync(SocketMessage socketMessage)
+        private async Task HandleNonCommandMessageAsync(SocketMessage socketMessage)
         {
             try
             {
@@ -74,20 +123,6 @@ namespace Dboy
                         Console.WriteLine($"Sent SMS/MMS to {phoneNumber}: {messageContent}");
                     }
                 }
-                else if (messageContent.StartsWith("!!"))
-                {
-                    await HandleCommandAsync(messageContent, senderUserId);
-                }
-
-                if (socketMessage.MentionedUsers.Any(user => user.Id == _discordClient.CurrentUser.Id))
-                {
-                    Console.WriteLine($"Bot mentioned by {socketMessage.Author.Username}: {socketMessage.Content}");
-                }
-
-                if (IsReplyToBot(socketMessage))
-                {
-                    Console.WriteLine($"Bot replied by {socketMessage.Author.Username}: {socketMessage.Content}");
-                }
             }
             catch (Exception ex)
             {
@@ -95,92 +130,34 @@ namespace Dboy
             }
         }
 
-        private bool IsReplyToSms(SocketMessage message)
-        {
-            // Placeholder implementation. Update this with your own logic.
-            return false; // Modify this line with your logic
-        }
-
         private string ExtractPhoneNumberFromReply(SocketMessage message)
         {
-            // Placeholder implementation. Update this with your own logic.
+            var words = message.Content.Split(' ');
+            foreach (var word in words)
+            {
+                if (word.Length == 10 && long.TryParse(word, out _))
+                {
+                    return word;
+                }
+            }
             return string.Empty;
         }
 
-        private bool IsReplyToBot(SocketMessage message)
+        private bool IsReplyToSms(SocketMessage message)
         {
-            // Placeholder implementation. Update this with your logic to identify if the message is a reply to the bot.
-            return false; // Modify this line with your logic
+            return message.Reference != null && message.Reference.MessageId.IsSpecified;
         }
 
-        private async Task HandleCommandAsync(string command, ulong senderUserId)
+        private string? FindPhoneNumberByUserId(ulong userId)
         {
-            try
+            foreach (var pair in _phoneNumberToUserId)
             {
-                var parts = command.Split(' ');
-                switch (parts[0].ToLower())
+                if (pair.Value == userId)
                 {
-                    case "!!msg":
-                        if (parts.Length < 3)
-                        {
-                            await SendUserMessage(senderUserId, "Usage: !!msg <PhoneNumber> <Message>");
-                            return;
-                        }
-                        await ProcessMsgCommand(parts, senderUserId);
-                        break;
-                    case "!!help":
-                        string helpCommand = parts.Length > 1 ? parts[1] : null;
-                        await DisplayHelpMessage(senderUserId, helpCommand);
-                        break;
-                        // Add other commands here
+                    return pair.Key;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing command: {ex.Message}");
-            }
-        }
-
-        private async Task ProcessMsgCommand(string[] parts, ulong senderUserId)
-        {
-            string phoneNumber = parts[1];
-            string message = string.Join(" ", parts, 2, parts.Length - 2);
-
-            var phoneNumberToSendFrom = FindPhoneNumberByUserId(senderUserId);
-            if (phoneNumberToSendFrom != null)
-            {
-                await _smsHandler.SendSMSMMSAsync(phoneNumberToSendFrom, phoneNumber, message);
-                await SendUserMessage(senderUserId, $"Message sent to {phoneNumber}");
-            }
-            else
-            {
-                await SendUserMessage(senderUserId, "You are not authorized or do not have an associated phone number.");
-            }
-        }
-
-        private async Task DisplayHelpMessage(ulong userId, string command = null)
-        {
-            var user = _discordClient.GetUser(userId);
-            if (user == null) return;
-
-            string helpMessage;
-
-            switch (command?.ToLower())
-            {
-                case "msg":
-                    helpMessage = "Use `!!msg <PhoneNumber> <Message>` to send an SMS.\n" +
-                                  "- `<PhoneNumber>` should be in the format 1NXXNXXXXXX.\n" +
-                                  "- `<Message>` is the text you want to send.";
-                    break;
-                default:
-                    helpMessage = "Available Commands:\n" +
-                                  "- `!!help`: Shows this help message.\n" +
-                                  "- `!!help <command>`: Shows help about a specific command.\n" +
-                                  "- `!!msg <PhoneNumber> <Message>`: Send an SMS to the specified phone number.";
-                    break;
-            }
-
-            await user.SendMessageAsync(helpMessage);
+            return null;
         }
 
         private async Task SendUserMessage(ulong userId, string message)
@@ -238,18 +215,6 @@ namespace Dboy
             }
         }
 
-        private string FindPhoneNumberByUserId(ulong userId)
-        {
-            foreach (var pair in _phoneNumberToUserId)
-            {
-                if (pair.Value == userId)
-                {
-                    return pair.Key;
-                }
-            }
-            return null;
-        }
-
         private async Task WaitForConnectionAsync()
         {
             while (!_connected)
@@ -262,6 +227,53 @@ namespace Dboy
         {
             _connected = true;
             return Task.CompletedTask;
+        }
+
+        public class CommandModule : ModuleBase<SocketCommandContext>
+        {
+            private readonly SmsHandler _smsHandler;
+            private readonly Dictionary<string, ulong> _phoneNumberToUserId;
+            private readonly DiscordHandler _discordHandler; // Reference to DiscordHandler
+
+            // Constructor needs to be updated to accept DiscordHandler as well.
+            public CommandModule(SmsHandler smsHandler, Dictionary<string, ulong> phoneNumberToUserId, DiscordHandler discordHandler)
+            {
+                _smsHandler = smsHandler;
+                _phoneNumberToUserId = phoneNumberToUserId;
+                _discordHandler = discordHandler;
+            }
+
+            [Command("help")]
+            [Summary("Shows help information.")]
+            public async Task HelpAsync()
+            {
+                string helpMessage = "Available Commands:\n" +
+                                     "- `!help`: Shows this help message.\n" +
+                                     "- `!msg <PhoneNumber> <Message>`: Send an SMS to the specified phone number.\n" +
+                                     "For `!msg`, `<PhoneNumber>` should be in the format 1NXXNXXXXXX and `<Message>` is the text you want to send.";
+                await ReplyAsync(helpMessage);
+            }
+
+            [Command("msg")]
+            [Summary("Sends an SMS message.")]
+            public async Task MsgAsync(string phoneNumber, [Remainder] string message)
+            {
+                var senderUserId = Context.User.Id;
+                string senderPhoneNumber = _phoneNumberToUserId.FirstOrDefault(p => p.Value == senderUserId).Key;
+                var response = await _smsHandler.SendSMSMMSAsync(senderPhoneNumber, phoneNumber, message);
+
+                if (response != null)
+                {
+                    // Send a direct message to the user
+                    await _discordHandler.SendUserMessage(senderUserId, $"Message sent successfully to {phoneNumber}.");
+                    await ReplyAsync($"Message sent to {phoneNumber}: {message}"); // Reply in the channel as well.
+                }
+                else
+                {
+                    await _discordHandler.SendUserMessage(senderUserId, $"Failed to send message to {phoneNumber}.");
+                    await ReplyAsync($"Failed to send message to {phoneNumber}."); // Reply in the channel as well.
+                }
+            }
         }
 
         private async Task SendWebhookMessageAsync(string message)

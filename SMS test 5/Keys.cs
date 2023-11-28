@@ -22,4 +22,5 @@
         public string webhookCallbackUrl { get; set; }
         public string mmsMediaUrl { get; set; }
     }
+    
 }

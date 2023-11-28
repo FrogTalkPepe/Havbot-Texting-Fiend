@@ -1,26 +1,27 @@
 {
   "discord": {
-    "token": "YOUR_DISCORD_BOT_TOKEN",
-    "guildId": "YOUR_DISCORD_GUILD_ID",
-    "channelId": "YOUR_DISCORD_CHANNEL_ID",
+    "token": "TOTALLY_SECRET_TOKEN.SHUSH.DO_NOT_SHARE",
+    "guildId": "123456789012345678",
+    "channelId": "987654321098765432",
     "phoneNumberToUserId": {
-      "YOUR_PHONE_NUMBER_1": "DISCORD_USER_ID_1",
-      "YOUR_PHONE_NUMBER_2": "DISCORD_USER_ID_2",
-      "YOUR_PHONE_NUMBER_3": "DISCORD_USER_ID_3",
-      "YOUR_PHONE_NUMBER_4": "DISCORD_USER_ID_4"
+      "14025551234": 100000000000000000,
+      "18285551234": 200000000000000000,
+      "19195551234": 300000000000000000,
+      "12065551234": 400000000000000000
     },
     "usernames": {
-      "DISCORD_USER_ID_1": "USERNAME_1",
-      "DISCORD_USER_ID_2": "USERNAME_2",
-      "DISCORD_USER_ID_3": "USERNAME_3",
-      "DISCORD_USER_ID_4": "USERNAME_4"
+      "100000000000000000": "CaptainMarvelous",
+      "200000000000000000": "TheMysteryMeister",
+      "300000000000000000": "QuantumWizard",
+      "400000000000000000": "SirLaughALot"
     },
-    "webhookUrl": "YOUR_DISCORD_WEBHOOK_URL"
+    "webhookUrl": "https://discord.com/api/webhooks/123456789012345678/super_secret_webhook"
   },
   "flowroute": {
-    "secretKey": "YOUR_FLOWROUTE_SECRET_KEY",
-    "accessKey": "YOUR_FLOWROUTE_ACCESS_KEY",
-    "webhookCallbackUrl": "YOUR_FLOWROUTE_WEBHOOK_CALLBACK_URL",
-    "mmsMediaUrl": "YOUR_FLOWROUTE_MMS_MEDIA_URL"
+    "secretKey": "SuperSecretKey123",
+    "accessKey": "AccessKey456",
+    "webhookCallbackUrl": "https://example.com/callback",
+    "mmsMediaUrl": "https://example.com/media/",
+    "phoneNumbers": [ "14025551234", "18285551234", "19195551234", "12065551234" ]
   }
 }

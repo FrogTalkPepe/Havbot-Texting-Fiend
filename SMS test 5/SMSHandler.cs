@@ -103,6 +103,9 @@ namespace Smguy
 
         public async Task<string> SendSMSMMSAsync(string fromDid, string toPhoneNumber, string messageContent)
         {
+            Console.WriteLine("Sending SMS/MMS...");
+            Console.WriteLine($"From: {fromDid}, To: {toPhoneNumber}, Message: {messageContent}");
+
             var smsMessage = new
             {
                 from = fromDid,
@@ -130,7 +133,8 @@ namespace Smguy
                 }
                 else
                 {
-                    Console.WriteLine($"Error sending SMS via Flowroute: {response.StatusCode}");
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error response from Flowroute: {errorResponse}");
                     return null;
                 }
             }

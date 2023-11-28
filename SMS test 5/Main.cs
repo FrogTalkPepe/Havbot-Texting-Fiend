@@ -4,8 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Dboy; // Adjusted for your namespace
-using Smguy; // Adjusted for your namespace
+using Dboy; // add your shit
+using Smguy; // that namespace shit
 
 namespace Mainboi
 {
@@ -18,7 +18,7 @@ namespace Mainboi
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Bot starting up...");
+            Console.WriteLine("Let's Run this shit.!.!.!");
 
             LoadKeys();
 
@@ -38,13 +38,82 @@ namespace Mainboi
                 _keys.discord.webhookUrl.ToString(),
                 _smsHandler);
 
-            await _discordHandler.LoginAsync();
+            // Start the Discord bot in a separate task
+            Task botTask = RunBot();
 
-            // Main loop for handling commands and messages
+            // Handling console input in the main thread
+            while (true)
+            {
+                await HandleConsoleInput();
+            }
+        }
+
+        static async Task RunBot()
+        {
+            await _discordHandler.LoginAsync();
             while (true)
             {
                 await HandleIncomingCommandsAndMessages();
-                await Task.Delay(1000); // Delay to prevent tight loop, adjust as necessary
+                await Task.Delay(1000); // Delay to prevent tight loop
+            }
+        }
+
+        static async Task HandleConsoleInput()
+        {
+            Console.WriteLine("\nChoose your shit!:");
+            Console.WriteLine("1: Send a Message");
+            Console.WriteLine("2: Exit Like a Bitch");
+            Console.Write("Enter option: ");
+            var option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    await SendSMSMMS();
+                    break;
+                case "2":
+                    Environment.Exit(0);
+                    break;
+                default:
+                    Console.WriteLine("Invalid option. Please try again.");
+                    break;
+            }
+        }
+
+        static async Task SendSMSMMS()
+        {
+            // Load and list Flowroute numbers
+            var flowrouteNumbers = _keys.flowroute.phoneNumbers.ToObject<List<string>>();
+            Console.WriteLine("Select a Flowroute number to send from:");
+            for (int i = 0; i < flowrouteNumbers.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}: {flowrouteNumbers[i]}");
+            }
+
+            Console.Write("Enter your choice: ");
+            int choice = Convert.ToInt32(Console.ReadLine());
+            string fromNumber = flowrouteNumbers[choice - 1];
+
+            Console.Write("Enter recipient phone number: ");
+            var phoneNumber = Console.ReadLine();
+
+            // Prepend "1" if it's not already there
+            if (!phoneNumber.StartsWith("1"))
+            {
+                phoneNumber = "1" + phoneNumber;
+            }
+
+            Console.Write("Enter message: ");
+            var message = Console.ReadLine();
+
+            try
+            {
+                await _smsHandler.SendSMSMMSAsync(fromNumber, phoneNumber, message);
+                Console.WriteLine("SMS/MMS sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending SMS/MMS: {ex.Message}");
             }
         }
 
@@ -71,7 +140,6 @@ namespace Mainboi
         private static async Task HandleIncomingCommandsAndMessages()
         {
             await HandleSmsMmsMessages();
-            // Here you can add additional logic for handling Discord commands or terminal inputs
         }
 
         private static async Task HandleSmsMmsMessages()
@@ -88,7 +156,6 @@ namespace Mainboi
                     continue; // Skip processing if the message is already displayed or null.
                 }
 
-                // Log only when a new message is being processed.
                 Console.WriteLine("Checking for SMS/MMS messages...");
                 Console.WriteLine($"Processing new message: {messageId}");
 
@@ -112,6 +179,4 @@ namespace Mainboi
             }
         }
     }
-}// Other methods in your class...
-    
-
+}
