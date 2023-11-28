@@ -1,4 +1,4 @@
-SMS and Discord Integration Bot
+Flowroute SMS and Discord Integration Bot
 
 This bot integrates SMS/MMS functionalities with Discord, allowing users to receive and send SMS/MMS messages through Discord and a console interface.
 Features
@@ -34,12 +34,12 @@ Replace the placeholders in keys.json with your actual Discord and Flowroute cre
     "token": "YOUR_DISCORD_BOT_TOKEN",
     "guildId": "YOUR_DISCORD_GUILD_ID",
     "channelId": "YOUR_DISCORD_CHANNEL_ID",
-    ...
+    
   },
   "flowroute": {
     "secretKey": "YOUR_FLOWROUTE_SECRET_KEY",
     "accessKey": "YOUR_FLOWROUTE_ACCESS_KEY",
-    ...
+    
   }
 }
 ```
@@ -68,7 +68,7 @@ Sending SMS/MMS via Console
     Follow the prompts to select a Flowroute number, enter the recipient's phone number, and type your message.
     The program will send the message and confirm its dispatch.
 
-Sending SMS/MMS via Discord
+Sending SMS/MMS via Discord (Does not work at the moment)
 
     Use the !msg command followed by the recipient's phone number and your message.
 
